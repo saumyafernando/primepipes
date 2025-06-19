@@ -1,6 +1,4 @@
-Student Name: Naveen Fernando
-Student ID: 21765018
-Unit: COMP2002 Unix Systems Programming (Semester 1, 2025)
+Auther Name: Naveen Fernando
 
 
 ---------------------------Prime Number Checker---------------------
