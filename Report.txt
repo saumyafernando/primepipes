@@ -1,0 +1,80 @@
+Student Name: Naveen Fernando
+Student ID: 21765018
+Unit: COMP2002 Unix Systems Programming (Semester 1, 2025)
+
+---------------Design Justification for Primality Test Program (prime)----------------
+
+Q1: How does your program read() and parse the integers correctly from the text file and store them into a 1D array (without using fscanf())?
+
+In fileReader.c, the read_numbers_from_file() function reads characters one-by-one from the file using the read() system call:
+
+    while (read(fd, &buffer, 1) > 0) 
+    {
+        if (buffer == '\n') break;
+        temp[temp_idx++] = buffer;
+    }
+
+The first line is parsed as the count of numbers.
+Each subsequent line (number) is read into temp[ ] and converted to int using parse_int(temp) from utils.c.
+The result is stored in a dynamically allocated array:
+
+    numbers[num_count++] = parse_int(temp);
+
+No use of fscanf() or buffered I/O is involved.
+
+Q2: How does your program create and organise the pipes? How do the parent and child processes know which pipe to use?
+
+In prime.c, the program creates two arrays of pipes:
+
+    int p2c[num_count][2];  // Parent to Child
+    int c2p[num_count][2];  // Child to Parent
+
+Each child has a dedicated pipe for receiving its number (p2c[i]) and sending back its result (c2p[i]).
+In each child (if (pid == 0)), only the pipe associated with its index is kept open:
+
+    for (int j = 0; j < num_count; j++) {
+        if (j != i) {
+            close(p2c[j][0]); close(p2c[j][1]);
+            close(c2p[j][0]); close(c2p[j][1]);
+        }
+    }
+
+This isolation ensures each child and parent pair communicates through a unique pipe.
+
+Q3: How do the child processes know when to stop reading? How do they know there is no more number coming from the parent? What does your program do to ensure read() does not block forever?
+
+Each child reads only once using:
+
+    read(p2c[i][0], &num, sizeof(int));
+
+The parent sends one integer per child and immediately closes the write-end:
+
+    write(p2c[i][1], &num_to_send, sizeof(int));
+    close(p2c[i][1]);
+
+When the pipe is closed from the parent side, the child’s read() returns 0 or the expected bytes.
+After reading, the child closes its read-end:
+
+    close(p2c[i][0]);
+
+This prevents further reads and avoids indefinite blocking.
+
+Q4: How does the parent process keep track of which child has been terminated and read the primality test result from the correct pipe?
+
+The parent tracks child PIDs in an array:
+
+    pid_t pids[num_count];
+
+After wait() returns a terminated child PID:
+
+    pid_t ended_pid = wait(&status);
+
+The program finds the index j in pids[j] == ended_pid to identify which child:
+
+    if (pids[j] == ended_pid) { index = j; }
+
+The parent then reads from c2p[index][0]:
+
+    read(c2p[index][0], &packet, sizeof(ResultPacket));
+
+This guarantees that results are received from the correct child and associated pipe.
