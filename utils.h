@@ -1,8 +1,6 @@
 /*****************************************************************************
  * File: utils.h
  * Author: Naveen Fernando
- * Student ID: 21765018
- * Unit: COMP2002 Unix Systems Programming (Semester 1, 2025)
  * Date Created: 30/04/2025
  * Last Modified: 07/05/2025
  *
