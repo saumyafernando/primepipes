@@ -5,8 +5,6 @@
 #*****************************************************************************
 # File: Makefile
 # Author: Naveen Fernando
-# Student ID: 21765018
-# Unit: COMP2002 Unix Systems Programming (Semester 1, 2025)
 # Date Created: 27/04/2025
 # Last Modified: 6/05/2025
 #
